@@ -15,7 +15,12 @@ module.exports = function loader(content) {
   const query = loaderUtils.parseQuery(this.query);
   const options = this.options.responsiveLoader || {};
   const sizes = query.sizes || query.size || options.sizes || [Number.MAX_SAFE_INTEGER];
-  const name = query.name || options.name || '[hash]-[width].';
+  let name = query.name || options.name || '[hash]-[width].';
+
+  if(name.charAt(name.length - 1) !== '.'){
+    name += '.';
+  }
+
   const outputContext = query.context || options.context || '';
   const outputPlaceholder = query.placeholder || query.placeholder !== false && options.placeholder || false;
   const placeholderSize = query.placeholderSize || options.placeholderSize || 40;
