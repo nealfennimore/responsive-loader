@@ -38,7 +38,7 @@ module.exports = function loader(content) {
 
   if (options.pass) {
     // emit original content only
-    const f = loaderUtils.interpolateName(loaderContext, '[hash].[ext]', {context: outputContext, content: content});
+    const f = loaderUtils.interpolateName(loaderContext, name + ext, {context: outputContext, content: content});
     loaderContext.emitFile(f, content);
     const p = '__webpack_public_path__ + ' + JSON.stringify(f);
     return loaderCallback(null, 'module.exports = {srcSet:' + p + ',images:[{path:' + p + ',width:1}],src: ' + p + ',toString:function(){return ' + p + '}};');
