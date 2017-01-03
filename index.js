@@ -43,10 +43,24 @@ module.exports = function loader(content) {
 
   if (options.pass) {
     // emit original content only
-    const f = loaderUtils.interpolateName(loaderContext, name + ext, {context: outputContext, content: content});
+    let f = loaderUtils.interpolateName(loaderContext, name + ext, {context: outputContext, content: content});
+    const biggestSize = Math.max.apply(null, sizes);
+
+    if(/\[width\]/ig.test(f)){
+        f = f.replace(/\[width\]/ig, biggestSize);
+    }
+
     loaderContext.emitFile(f, content);
     const p = '__webpack_public_path__ + ' + JSON.stringify(f);
-    return loaderCallback(null, 'module.exports = {srcSet:' + p + ',images:[{path:' + p + ',width:1}],src: ' + p + ',toString:function(){return ' + p + '}};');
+    const srcset = sizes.map(size => JSON.stringify( f.replace(/\d+/gi, size) + ' ' + size + 'w') ).join('+","+');
+    const images = sizes.map(size => '{path:' + p.replace(/\d+/gi, size) + ',width:' + size + '}').join(',');
+
+    return loaderCallback(null, 'module.exports = {' +
+        'srcSet:' + srcset + ',' +
+        'images:[' + images + '],' +
+        'src:' + p + ',' +
+        'toString:function(){return ' + p + '}' +
+    '};');
   }
 
   return jimp.read(loaderContext.resourcePath, (err, img) => {
