@@ -9,6 +9,11 @@ const MIMES = {
   'png': 'image/png'
 };
 
+function fileNameWithSize(f, size){
+    return f.replace(/\[width\]/ig, size);
+}
+
+
 module.exports = function loader(content) {
   this.cacheable && this.cacheable();
   const loaderCallback = this.async();
@@ -44,16 +49,21 @@ module.exports = function loader(content) {
   if (options.pass) {
     // emit original content only
     let f = loaderUtils.interpolateName(loaderContext, name + ext, {context: outputContext, content: content});
-    const biggestSize = Math.max.apply(null, sizes);
+    let fileName;
 
     if(/\[width\]/ig.test(f)){
-        f = f.replace(/\[width\]/ig, biggestSize);
+        const biggestSize = Math.max.apply(null, sizes);
+        fileName = fileNameWithSize(f, biggestSize);
+    } else {
+        fileName = f;
     }
 
+
     loaderContext.emitFile(f, content);
-    const p = '__webpack_public_path__ + ' + JSON.stringify(f);
-    const srcset = sizes.map(size => JSON.stringify( f.replace(/\d+/gi, size) + ' ' + size + 'w') ).join('+","+');
-    const images = sizes.map(size => '{path:' + p.replace(/\d+/gi, size) + ',width:' + size + '}').join(',');
+    let p = '__webpack_public_path__ + ' + JSON.stringify(fileName);
+
+    const srcset = sizes.map(size => JSON.stringify(fileNameWithSize(f, size) + ' ' + size + 'w' )).join('+","+');
+    const images = sizes.map(size => '{path:' + '__webpack_public_path__ + ' + JSON.stringify(fileNameWithSize(f, size)) + ',width:' + size + '}').join(',');
 
     return loaderCallback(null, 'module.exports = {' +
         'srcSet:' + srcset + ',' +
